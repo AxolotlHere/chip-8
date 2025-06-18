@@ -72,7 +72,4 @@ impl Chip8 {
             }
         }
     }
-    pub fn cls(&mut self){
-    self.video.fill(0);
-    }
 }
