@@ -85,5 +85,7 @@ impl Chip8 {
         if !key_found{
             self.pc-=2;
         }
+    pub fn op_00e0(&mut self){
+      self.video.fill(0);
     }
 }
