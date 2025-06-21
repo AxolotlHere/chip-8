@@ -16,7 +16,7 @@ static FONT_8_5: [u8; 80] = [
     0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80,
 ];
 pub struct Chip8 {
-    pub gr: [u32; 16],
+    pub gr: [u8; 16],
     pub memory: [u8; 4096],
     pub index: u16,
     pub pc: u16,
@@ -100,6 +100,13 @@ impl Chip8 {
 
     pub fn op_1nnn(&mut self, opcode: u16) {
         self.pc = opcode & 0x0FFF;
+    }
+    pub fn op_4xkk(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let byte_val: u8 = (opcode & 0x00FF) as u8;
+        if (self.gr[Vx as usize] != byte_val) {
+            self.pc += 2;
+        }
     }
 }
 
