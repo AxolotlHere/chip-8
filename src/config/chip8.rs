@@ -104,7 +104,7 @@ impl Chip8 {
     pub fn op_4xkk(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let byte_val: u8 = (opcode & 0x00FF) as u8;
-        if (self.gr[Vx as usize] == byte_val) {
+        if (self.gr[Vx as usize] != byte_val) {
             self.pc += 2;
         }
     }
