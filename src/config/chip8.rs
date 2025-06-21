@@ -21,6 +21,7 @@ pub struct Chip8 {
     pub index: u16,
     pub pc: u16,
     pub stk: [u16; 16],
+    pub sp: u8,
     pub delay_timer: u8,
     pub snd_timer: u8,
     pub keypad: [u8; 16],
@@ -41,6 +42,7 @@ impl Chip8 {
             index: 0,
             pc: START_ADDR,
             stk: [0; 16],
+            sp: 0,
             delay_timer: 0,
             snd_timer: 0,
             keypad: [0; 16],
@@ -72,21 +74,28 @@ impl Chip8 {
             }
         }
     }
-    pub fn op_00e0(&mut self){
-            self.video.fill(0);
+    pub fn op_00e0(&mut self) {
+        self.video.fill(0);
     }
     pub fn op_fx0a(&mut self, opcode: u16) {
         let vx = ((opcode & 0x0F00) >> 8) as usize;
-        let mut key_found=false;
-        for i in 0..self.keypad.len(){
-            if self.keypad[i]!=0{
-                self.gr[vx]=i as u32;
-                key_found=true;
+        let mut key_found = false;
+        for i in 0..self.keypad.len() {
+            if self.keypad[i] != 0 {
+                self.gr[vx] = i as u32;
+                key_found = true;
                 break;
             }
         }
-        if !key_found{
-            self.pc-=2;
+        if !key_found {
+            self.pc -= 2;
+        }
+    }
+    pub fn op_00ee(&mut self) {
+        if (self.sp != 0) {
+            self.sp -= 1;
+            self.pc = self.stk[self.sp as usize];
         }
     }
 }
+
