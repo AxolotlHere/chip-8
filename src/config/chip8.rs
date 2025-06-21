@@ -97,5 +97,9 @@ impl Chip8 {
             self.pc = self.stk[self.sp as usize];
         }
     }
+
+    pub fn op_1nnn(&mut self, opcode: u16) {
+        self.pc = opcode & 0x0FFF;
+    }
 }
 
