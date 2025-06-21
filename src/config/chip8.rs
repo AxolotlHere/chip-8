@@ -15,6 +15,8 @@ static FONT_8_5: [u8; 80] = [
     0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80,
     0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80,
 ];
+static E_WIDTH: u8 = 64;
+static E_HEIGHT: u8 = 32;
 pub struct Chip8 {
     pub gr: [u8; 16],
     pub memory: [u8; 4096],
@@ -25,7 +27,7 @@ pub struct Chip8 {
     pub delay_timer: u8,
     pub snd_timer: u8,
     pub keypad: [u8; 16],
-    pub video: [u8; 64 * 32],
+    pub video: [u32; 64 * 32],
     pub rng: StdRng,
 }
 
@@ -82,7 +84,7 @@ impl Chip8 {
         let mut key_found = false;
         for i in 0..self.keypad.len() {
             if self.keypad[i] != 0 {
-                self.gr[vx] = i as u32;
+                self.gr[vx] = i as u8;
                 key_found = true;
                 break;
             }
@@ -108,5 +110,29 @@ impl Chip8 {
             self.pc += 2;
         }
     }
-}
 
+    pub fn op_dxyn(&mut self, opcode: u16) {
+        let Vx: u16 = (opcode & 0x0F00) >> 8;
+        let Vy: u16 = (opcode & 0x00F0) >> 4;
+        let height: u16 = (opcode & 0x000F);
+
+        let x_pos: u8 = self.gr[Vx as usize]; //x start value stored at register Vx
+        let y_pos: u8 = self.gr[Vy as usize]; //y start value stored at register Vy
+
+        for i in 0..height - 1 {
+            let sprite_byte = self.memory[(self.index + i) as usize];
+            for j in 0..7 {
+                let draw_pixel: u8 = sprite_byte & (0x80 >> j);
+                let screen_pixel: &mut u32 =
+                    &mut self.video[((x_pos + i as u8) + (y_pos + j as u8) * E_WIDTH) as usize];
+                if (draw_pixel == 1 && *screen_pixel == 1) {
+                    //collision case
+                    if (*screen_pixel == 1) {
+                        self.gr[15] = 1;
+                    }
+                    *screen_pixel ^= 0xFFFFFFFF;
+                }
+            }
+        }
+    }
+}
