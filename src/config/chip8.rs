@@ -117,13 +117,19 @@ impl Chip8 {
         self.pc = addr_;
     }
     pub fn op_3xkk(&mut self, opcode: u16) {
-        let Vx: u8 = (opcode & 0x0F00) as u8;
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let bytes_: u8 = (opcode & 0x00FF) as u8;
         if (self.gr[Vx as usize] == bytes_) {
             self.pc += 2;
         }
     }
-
+    pub fn op_5xy0(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
+        if (self.gr[Vx as usize] == self.gr[Vy as usize]) {
+            self.pc += 2;
+        }
+    }
     pub fn op_dxyn(&mut self, opcode: u16) {
         let Vx: u16 = (opcode & 0x0F00) >> 8;
         let Vy: u16 = (opcode & 0x00F0) >> 4;
