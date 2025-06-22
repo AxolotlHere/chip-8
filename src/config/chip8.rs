@@ -110,7 +110,12 @@ impl Chip8 {
             self.pc += 2;
         }
     }
-
+    pub fn op_2nnn(&mut self, opcode: u16) {
+        let addr_: u16 = opcode & 0x0FFF;
+        self.stk[self.sp as usize] = addr_;
+        self.sp += 1;
+        self.pc = addr_;
+    }
     pub fn op_dxyn(&mut self, opcode: u16) {
         let Vx: u16 = (opcode & 0x0F00) >> 8;
         let Vy: u16 = (opcode & 0x00F0) >> 4;
