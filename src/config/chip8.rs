@@ -135,7 +135,11 @@ impl Chip8 {
         let Vy: u8 = (opcode & 0x00FF) as u8;
         self.gr[Vx as usize] = Vy;
     }
-
+    pub fn op_7xkk(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let bytes_: u8 = (opcode & 0x00FF) as u8;
+        self.gr[Vx as usize] += bytes_;
+    }
     pub fn op_dxyn(&mut self, opcode: u16) {
         let Vx: u16 = (opcode & 0x0F00) >> 8;
         let Vy: u16 = (opcode & 0x00F0) >> 4;
