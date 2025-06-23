@@ -161,6 +161,12 @@ impl Chip8 {
             self.gr[i as usize] = self.memory[(self.index as u8 + i) as usize];
         }
     }
+    pub fn op_fx55(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        for i in 0..Vx {
+            self.memory[(self.index as u8 + i) as usize] = self.gr[i as usize];
+        }
+    }
     pub fn op_dxyn(&mut self, opcode: u16) {
         let Vx: u16 = (opcode & 0x0F00) >> 8;
         let Vy: u16 = (opcode & 0x00F0) >> 4;
