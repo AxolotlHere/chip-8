@@ -196,4 +196,55 @@ impl Chip8 {
         let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
         self.gr[Vx as usize] &= self.gr[Vy as usize];
     }
+    pub fn op_fx33(&mut self, opcode: u16) {
+        let Vx: usize = ((opcode & 0x0F00) >> 8) as usize;
+        let mut value: u8 = self.gr[Vx];
+
+        self.memory[self.index as usize + 2] = value % 10;
+        value /= 10;
+
+        self.memory[self.index as usize + 1] = value % 10;
+        value /= 10;
+
+        self.memory[self.index as usize] = value % 10;
+    }
+    pub fn op_fx29(&mut self,opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let digit: u8 = self.gr[Vx as usize];
+        self.index = FONT_ADDR + (5 * digit as u16);
+    }
+    pub fn op_fx1e(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        self.index += self.gr[Vx as usize] as u16;
+    }
+    pub fn op_fx18(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        self.snd_timer = self.gr[Vx as usize];
+    }
+    pub fn op_fx15(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        self.delay_timer = self.gr[Vx as usize];
+    }
+    pub fn op_fx07(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        self.gr[Vx as usize] = self.delay_timer;
+    }
+    pub fn op_exa1(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let key: u8 = self.gr[Vx as usize];
+        if self.keypad[key as usize] == 0{
+            self.pc += 2;
+        }
+    }
+    pub fn op_ex9e(&mut self, opcode: u16){
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let key: u8 = self.gr[Vx as usize];
+        if self.keypad[key as usize] != 0{
+            self.pc +=2;
+        }
+    }
+    pub fn op_bnnn(&mut self, opcode: u16){
+        let address: u16 = opcode & 0x0FFF;
+        self.pc = (self.gr[0] as u16).wrapping_add(address);
+    }
 }
