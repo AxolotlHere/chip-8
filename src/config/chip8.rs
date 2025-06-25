@@ -218,6 +218,30 @@ impl Chip8 {
             self.pc += 2;
         }
     }
+    pub fn op_8xy5(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
+        if self.gr[Vx as usize] > self.gr[Vy as usize] {
+            self.gr[0xF] = 1;
+        }     
+        else {
+            self.gr[0xF] = 0;
+        }
+        self.gr[Vx as usize] = self.gr[Vx as usize].wrapping_sub(self.gr[Vy as usize]);
+    }
+    pub fn op_8xy7(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
+        if self.gr[Vy as usize] > self.gr[Vx as usize] {
+            self.gr[0xF] = 1;
+        } 
+        else {
+            self.gr[0xF] = 0;
+        }
+        self.gr[Vx as usize] = self.gr[Vy as usize].wrapping_sub(self.gr[Vx as usize]);
+    }
+
+
 
 
 
