@@ -206,6 +206,12 @@ impl Chip8 {
         self.gr[0xF] = self.gr[Vx as usize] & 0x1;
         self.gr[Vx as usize] >>= 1;
     }
+    pub fn op_8xye(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        self.gr[0xF] = (self.gr[Vx as usize] & 0x80) >> 7;
+        self.gr[Vx as usize] <<= 1;
+    }
+
 
 
     pub fn op_fx33(&mut self, opcode: u16) {
