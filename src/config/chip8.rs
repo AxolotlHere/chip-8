@@ -167,6 +167,7 @@ impl Chip8 {
             self.memory[(self.index as u8 + i) as usize] = self.gr[i as usize];
         }
     }
+
     pub fn op_dxyn(&mut self, opcode: u16) {
         let Vx: u16 = (opcode & 0x0F00) >> 8;
         let Vy: u16 = (opcode & 0x00F0) >> 4;
