@@ -4,7 +4,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use rand::{SeedableRng, rngs::StdRng};
+use rand::{Rng, SeedableRng, rngs::StdRng};
 
 static START_ADDR: u16 = 0x200;
 static FONT_ADDR: u16 = 0x50;
@@ -224,8 +224,7 @@ impl Chip8 {
         let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
         if self.gr[Vx as usize] > self.gr[Vy as usize] {
             self.gr[0xF] = 1;
-        }     
-        else {
+        } else {
             self.gr[0xF] = 0;
         }
         self.gr[Vx as usize] = self.gr[Vx as usize].wrapping_sub(self.gr[Vy as usize]);
@@ -235,17 +234,11 @@ impl Chip8 {
         let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
         if self.gr[Vy as usize] > self.gr[Vx as usize] {
             self.gr[0xF] = 1;
-        } 
-        else {
+        } else {
             self.gr[0xF] = 0;
         }
         self.gr[Vx as usize] = self.gr[Vy as usize].wrapping_sub(self.gr[Vx as usize]);
     }
-
-
-
-
-
 
     pub fn op_fx33(&mut self, opcode: u16) {
         let Vx: usize = ((opcode & 0x0F00) >> 8) as usize;
@@ -259,43 +252,55 @@ impl Chip8 {
 
         self.memory[self.index as usize] = value % 10;
     }
-    pub fn op_fx29(&mut self,opcode: u16){
+    pub fn op_fx29(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let digit: u8 = self.gr[Vx as usize];
         self.index = FONT_ADDR + (5 * digit as u16);
     }
-    pub fn op_fx1e(&mut self, opcode: u16){
+    pub fn op_fx1e(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         self.index += self.gr[Vx as usize] as u16;
     }
-    pub fn op_fx18(&mut self, opcode: u16){
+    pub fn op_fx18(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         self.snd_timer = self.gr[Vx as usize];
     }
-    pub fn op_fx15(&mut self, opcode: u16){
+    pub fn op_fx15(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         self.delay_timer = self.gr[Vx as usize];
     }
-    pub fn op_fx07(&mut self, opcode: u16){
+    pub fn op_fx07(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         self.gr[Vx as usize] = self.delay_timer;
     }
-    pub fn op_exa1(&mut self, opcode: u16){
+    pub fn op_exa1(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let key: u8 = self.gr[Vx as usize];
-        if self.keypad[key as usize] == 0{
+        if self.keypad[key as usize] == 0 {
             self.pc += 2;
         }
     }
-    pub fn op_ex9e(&mut self, opcode: u16){
+    pub fn op_ex9e(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let key: u8 = self.gr[Vx as usize];
-        if self.keypad[key as usize] != 0{
-            self.pc +=2;
+        if self.keypad[key as usize] != 0 {
+            self.pc += 2;
         }
     }
-    pub fn op_bnnn(&mut self, opcode: u16){
+    pub fn op_bnnn(&mut self, opcode: u16) {
         let address: u16 = opcode & 0x0FFF;
         self.pc = (self.gr[0] as u16).wrapping_add(address);
+    }
+
+    pub fn op_annn(&mut self, opcode: u16) {
+        let address: u16 = opcode & 0x0FFF;
+        self.index = address;
+    }
+
+    pub fn op_cxkk(&mut self, opcode: u16) {
+        let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
+        let byte: u8 = (opcode & 0x00FF) as u8;
+
+        self.gr[Vx as usize] = self.rng.gen() & byte;
     }
 }
