@@ -4,7 +4,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use rand::{Rng, SeedableRng, rngs::StdRng};
+use rand::random;
 
 static START_ADDR: u16 = 0x200;
 static FONT_ADDR: u16 = 0x50;
@@ -28,16 +28,10 @@ pub struct Chip8 {
     pub snd_timer: u8,
     pub keypad: [u8; 16],
     pub video: [u32; 64 * 32],
-    pub rng: StdRng,
 }
 
 impl Chip8 {
     pub fn new() -> Self {
-        let seed: u64 = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("GND build failed, exiting process")
-            .as_nanos() as u64;
-        let rng_: StdRng = StdRng::seed_from_u64(seed);
         Self {
             gr: [0; 16],
             memory: [0; 4096],
@@ -49,7 +43,6 @@ impl Chip8 {
             snd_timer: 0,
             keypad: [0; 16],
             video: [0; 2048],
-            rng: rng_,
         }
     }
     pub fn ld_fonts(&mut self) {
@@ -301,7 +294,7 @@ impl Chip8 {
     pub fn op_cxkk(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let byte: u8 = (opcode & 0x00FF) as u8;
-
-        self.gr[Vx as usize] = self.rng.gen() & byte;
+        let val_: u8 = random();
+        self.gr[Vx as usize] = val_ & byte;
     }
 }
