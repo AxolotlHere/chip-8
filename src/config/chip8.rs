@@ -46,8 +46,65 @@ impl Chip8 {
         }
     }
     pub fn ld_fonts(&mut self) {
-        for i in 1..FONT_8_5.len() {
+        for i in 0..FONT_8_5.len() {
             self.memory[(FONT_ADDR + i as u16) as usize] = FONT_8_5[i];
+        }
+    }
+    pub fn dispatch(&mut self, opcode: u16) {
+        match (opcode & 0xF000) >> 12 {
+            0x0 => match (opcode & 0x000F) {
+                0x0 => self.op_00e0(),
+                0xE => self.op_00ee(),
+                _ => panic!("Invalid opcode"),
+            },
+            0x1 => self.op_1nnn(opcode),
+            0x2 => self.op_2nnn(opcode),
+            0x3 => self.op_3xkk(opcode),
+            0x4 => self.op_4xkk(opcode),
+            0x5 => self.op_5xy0(opcode),
+            0x6 => self.op_6xkk(opcode),
+            0x7 => self.op_7xkk(opcode),
+            0x8 => match opcode & 0x000F {
+                0x0 => self.op_8xy0(opcode),
+                0x1 => self.op_8xy1(opcode),
+                0x2 => self.op_8xy2(opcode),
+                0x3 => self.op_8xy3(opcode),
+                0x4 => self.op_8xy4(opcode),
+                0x5 => self.op_8xy5(opcode),
+                0x6 => self.op_8xy6(opcode),
+                0x7 => self.op_8xy7(opcode),
+                0xE => self.op_8xye(opcode),
+                _ => panic!("Invalid opcode"),
+            },
+            0x9 => self.op_9xy0(opcode),
+            0xA => self.op_annn(opcode),
+            0xB => self.op_bnnn(opcode),
+            0xC => self.op_cxkk(opcode),
+            0xD => self.op_dxyn(opcode),
+            0xE => match opcode & 0x000F {
+                0x1 => self.op_exa1(opcode),
+                0xE => self.op_ex9e(opcode),
+                _ => panic!("Invalid opcode"),
+            },
+            0xF => match opcode & 0x00F0 >> 4 {
+                0x0 => match opcode & 0x000F {
+                    0x7 => self.op_fx07(opcode),
+                    0xA => self.op_fx0a(opcode),
+                    _ => panic!("Invalid opcode"),
+                },
+                0x1 => match opcode & 0x000F {
+                    0x5 => self.op_fx15(opcode),
+                    0x8 => self.op_fx18(opcode),
+                    0xE => self.op_fx1e(opcode),
+                    _ => panic!("Invalid opcode"),
+                },
+                0x2 => self.op_fx29(opcode),
+                0x3 => self.op_fx33(opcode),
+                0x5 => self.op_fx55(opcode),
+                0x6 => self.op_fx65(opcode),
+                _ => panic!("Invalid opcode"),
+            },
+            _ => panic!("Invalid opcode"),
         }
     }
     pub fn ld_rom(&mut self, filepath: String) {
@@ -172,7 +229,7 @@ impl Chip8 {
 
         for i in 0..height - 1 {
             let sprite_byte = self.memory[(self.index + i) as usize];
-            for j in 0..7 {
+            for j in 0..8 {
                 let draw_pixel: u8 = sprite_byte & (0x80 >> j);
                 let screen_pixel: &mut u32 =
                     &mut self.video[((x_pos + i as u8) + (y_pos + j as u8) * E_WIDTH) as usize];
