@@ -50,6 +50,20 @@ impl Chip8 {
             self.memory[(FONT_ADDR + i as u16) as usize] = FONT_8_5[i];
         }
     }
+    pub fn fetch(&mut self) -> u16 {
+        let upper_hex: u16 = self.memory[self.pc as usize] as u16;
+        let lower_hex: u16 = self.memory[(self.pc + 1) as usize] as u16;
+        (upper_hex << 8) | lower_hex
+    }
+    pub fn cycle(&mut self) {
+        let opcode: u16 = self.fetch();
+        self.pc += 2;
+        self.dispatch(opcode);
+
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+    }
     pub fn dispatch(&mut self, opcode: u16) {
         match (opcode & 0xF000) >> 12 {
             0x0 => match (opcode & 0x000F) {
