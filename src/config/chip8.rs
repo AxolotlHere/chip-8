@@ -100,7 +100,7 @@ impl Chip8 {
                 0xE => self.op_ex9e(opcode),
                 _ => panic!("Invalid opcode"),
             },
-            0xF => match opcode & 0x00F0 >> 4 {
+            0xF => match (opcode & 0x00F0) >> 4 {
                 0x0 => match opcode & 0x000F {
                     0x7 => self.op_fx07(opcode),
                     0xA => self.op_fx0a(opcode),
@@ -176,7 +176,7 @@ impl Chip8 {
     }
     pub fn op_2nnn(&mut self, opcode: u16) {
         let addr_: u16 = opcode & 0x0FFF;
-        self.stk[self.sp as usize] = addr_;
+        self.stk[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = addr_;
     }
@@ -202,12 +202,12 @@ impl Chip8 {
     pub fn op_7xkk(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let bytes_: u8 = (opcode & 0x00FF) as u8;
-        self.gr[Vx as usize] += bytes_;
+        self.gr[Vx as usize] = self.gr[Vx as usize].wrapping_add(bytes_);
     }
     pub fn op_8xy4(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
         let Vy: u8 = ((opcode & 0x00F0) >> 4) as u8;
-        self.gr[Vx as usize] += self.gr[Vy as usize];
+        self.gr[Vx as usize] = self.gr[Vx as usize].wrapping_add(self.gr[Vy as usize]);
     }
     pub fn op_8xy0(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
@@ -222,13 +222,13 @@ impl Chip8 {
     }
     pub fn op_fx65(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
-        for i in 0..Vx {
+        for i in 0..=Vx {
             self.gr[i as usize] = self.memory[(self.index as u8 + i) as usize];
         }
     }
     pub fn op_fx55(&mut self, opcode: u16) {
         let Vx: u8 = ((opcode & 0x0F00) >> 8) as u8;
-        for i in 0..Vx {
+        for i in 0..=Vx {
             self.memory[(self.index as u8 + i) as usize] = self.gr[i as usize];
         }
     }
@@ -241,15 +241,19 @@ impl Chip8 {
         let x_pos: u8 = self.gr[Vx as usize]; //x start value stored at register Vx
         let y_pos: u8 = self.gr[Vy as usize]; //y start value stored at register Vy
 
-        for i in 0..height - 1 {
+        self.gr[0xF] = 0;
+
+        for i in 0..height {
             let sprite_byte = self.memory[(self.index + i) as usize];
             for j in 0..8 {
                 let draw_pixel: u8 = sprite_byte & (0x80 >> j);
-                let screen_pixel: &mut u32 =
-                    &mut self.video[((x_pos + i as u8) + (y_pos + j as u8) * E_WIDTH) as usize];
-                if (draw_pixel == 1 && *screen_pixel == 1) {
+                let x = (x_pos as usize + j as usize) % E_WIDTH as usize;
+                let y = (y_pos as usize + i as usize) % E_HEIGHT as usize;
+                let index_ = x + y * E_WIDTH as usize;
+                let screen_pixel: &mut u32 = &mut self.video[index_];
+                if (draw_pixel != 0) {
                     //collision case
-                    if (*screen_pixel == 1) {
+                    if (*screen_pixel != 0) {
                         self.gr[15] = 1;
                     }
                     *screen_pixel ^= 0xFFFFFFFF;
