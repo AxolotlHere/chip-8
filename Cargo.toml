@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 minifb = "0.28.0"
 rand = "0.9.1"
-sdl2 = "0.37.0"
+sdl2-sys = "*"
+sdl2 = "^0.31.0"
