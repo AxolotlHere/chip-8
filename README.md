@@ -47,10 +47,16 @@ Example:
 For Debian/Ubuntu:
 ```sudo apt install libsdl2-dev```
 
+
+
 For Arch Linux:
 ```sudo pacman -S sdl2```
 
+
+
 To build and run the emulator:
 ```cargo run```
+
+
 
 Currently running game files to be changed at ```src/main.rs```
