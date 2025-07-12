@@ -16,7 +16,7 @@ A simple CHIP-8 emulator written in Rust using SDL2 for graphics and input.
 CHIP-8 ROMs (`.ch8` files) should be placed inside the `binary_assets/` directory.
 
 Example:
-
+```
 .
 ├── binary_assets
 │   ├── Blitz.ch8
@@ -34,6 +34,8 @@ Example:
 └── target
     ├── CACHEDIR.TAG
     └── debug
+```
+
 
 ## Building and Running
 
